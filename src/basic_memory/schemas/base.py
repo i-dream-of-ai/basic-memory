@@ -193,7 +193,7 @@ class Entity(BaseModel):
             use_kebab_case = app_config.filename_format == "kebab-case"
         except ImportError:
             # Fallback to original behavior if config not available
-            use_kebab_case = False
+            use_kebab_case = True
         
         filename = sanitize_filename(self.title) if use_kebab_case else self.title
         
