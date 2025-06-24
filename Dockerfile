@@ -17,6 +17,10 @@ RUN uv sync --locked
 # Create data directory
 RUN mkdir -p /app/data
 
+# Copy and setup initialization script
+COPY docker-init.sh /app/docker-init.sh
+RUN chmod +x /app/docker-init.sh
+
 # Set default data directory and add venv to PATH
 ENV BASIC_MEMORY_HOME=/app/data \
     PATH="/app/.venv/bin:$PATH"
@@ -28,5 +32,6 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD basic-memory --version || exit 1
 
-# Use the basic-memory entrypoint to run the MCP server with default SSE transport
+# Use initialization script as entrypoint with the basic-memory command
+ENTRYPOINT ["/app/docker-init.sh"]
 CMD ["basic-memory", "mcp", "--transport", "sse", "--host", "0.0.0.0", "--port", "8000"]

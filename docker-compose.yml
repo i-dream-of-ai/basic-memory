@@ -27,8 +27,8 @@ services:
       # - ./work-notes:/app/data/work:rw
       # - ./personal-notes:/app/data/personal:rw
 
-      # You can edit the project config manually in the mounted config volume
-      # The default project will be configured to use /app/data
+      # Configuration is automatically initialized to use the mounted /app/data directory
+      # You can edit the project config manually in the mounted config volume if needed
     environment:
       # Project configuration
       - BASIC_MEMORY_DEFAULT_PROJECT=main
