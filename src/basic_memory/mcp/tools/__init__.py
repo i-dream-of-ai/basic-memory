@@ -7,6 +7,7 @@ all tools with the MCP server.
 
 # Import tools to register them with MCP
 from basic_memory.mcp.tools.delete_note import delete_note
+from basic_memory.mcp.tools.diagnostics import diagnostics
 from basic_memory.mcp.tools.read_content import read_content
 from basic_memory.mcp.tools.build_context import build_context
 from basic_memory.mcp.tools.recent_activity import recent_activity
@@ -34,6 +35,7 @@ __all__ = [
     "create_project",
     "delete_note",
     "delete_project",
+    "diagnostics",
     "edit_note",
     "get_current_project",
     "list_directory",
