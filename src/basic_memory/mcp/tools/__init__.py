@@ -19,6 +19,7 @@ from basic_memory.mcp.tools.list_directory import list_directory
 from basic_memory.mcp.tools.edit_note import edit_note
 from basic_memory.mcp.tools.move_note import move_note
 from basic_memory.mcp.tools.sync_status import sync_status
+from basic_memory.mcp.tools.diagnostics import diagnostics
 from basic_memory.mcp.tools.project_management import (
     list_projects,
     switch_project,
@@ -34,6 +35,7 @@ __all__ = [
     "create_project",
     "delete_note",
     "delete_project",
+    "diagnostics",
     "edit_note",
     "get_current_project",
     "list_directory",
