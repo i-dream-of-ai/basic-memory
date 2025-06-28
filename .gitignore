@@ -53,3 +53,7 @@ ENV/
 # claude action
 claude-output
 **/.claude/settings.local.json
+
+# DXT package files
+basic-memory.dxt
+dxt-bundle/

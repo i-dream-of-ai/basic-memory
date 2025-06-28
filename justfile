@@ -177,6 +177,40 @@ beta version:
     echo "🔗 Monitor at: https://github.com/basicmachines-co/basic-memory/actions"
     echo "📥 Install with: uv tool install basic-memory --pre"
 
+# Build DXT package with bundled virtual environment
+dxt:
+    #!/usr/bin/env bash
+    echo "🏗️  Building DXT package..."
+    
+    # Clean and create bundle directory
+    rm -rf dxt-bundle
+    mkdir -p dxt-bundle/server/lib dxt-bundle/src
+    
+    # Bundle dependencies to server/lib (like Anthropic example)
+    echo "📦 Bundling Python dependencies..."
+    uv pip install -e . --target dxt-bundle/server/lib --force-reinstall
+    
+    # Copy source code
+    echo "📄 Copying source code..."
+    cp -r src/basic_memory dxt-bundle/src/
+    
+    # Copy manifest
+    cp manifest.json dxt-bundle/
+    
+    # Copy assets (icons, screenshots)
+    echo "🖼️  Copying assets..."
+    mkdir -p dxt-bundle/images
+    cp images/disk-ai-logo-black-fg-white-bg.png dxt-bundle/images/
+    cp images/claude-*.png dxt-bundle/images/
+    
+    # Create DXT package
+    echo "📦 Creating DXT package..."
+    cd dxt-bundle && dxt pack . ../basic-memory.dxt
+    
+    echo "✅ DXT package created: basic-memory.dxt"
+    echo "🔍 Info: dxt info basic-memory.dxt"
+    echo "🧪 Test: Install in Claude Desktop"
+
 # List all available recipes
 default:
     @just --list

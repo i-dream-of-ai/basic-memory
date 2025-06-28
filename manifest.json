@@ -1,0 +1,166 @@
+{
+  "dxt_version": "0.1",
+  "name": "basic-memory",
+  "display_name": "Basic Memory Knowledge Management",
+  "version": "0.14.0",
+  "description": "Local-first knowledge management with AI integration",
+  "long_description": "Basic Memory is a local-first knowledge management system that creates a personal knowledge graph from markdown files. It enables bidirectional communication between LLMs and your local knowledge base through the Model Context Protocol (MCP), allowing AI assistants to read, write, and navigate your knowledge seamlessly.",
+  "author": {
+    "name": "Basic Machines",
+    "email": "hello@basicmachines.co",
+    "url": "https://github.com/basicmachines-co"
+  },
+  "homepage": "https://basicmemory.com/",
+  "documentation": "https://memory.basicmachines.co/",
+  "support": "https://memory.basicmachines.co/user-guide",
+  "icon": "images/disk-ai-logo-black-fg-white-bg.png",
+  "screenshots": [
+    "images/claude-continue-conversation.png",
+    "images/claude-switch-project.png",
+    "images/claude-view-note.png"
+  ],
+  "server": {
+    "type": "python",
+    "entry_point": "src/basic_memory/cli/main.py",
+    "mcp_config": {
+      "command": "python3",
+      "args": [
+        "${__dirname}/src/basic_memory/cli/main.py",
+        "mcp",
+        "--transport=stdio"
+      ],
+      "env": {
+        "BASIC_MEMORY_HOME": "${user_data_dir}/basic-memory",
+        "PYTHONPATH": "${__dirname}/server/lib:${__dirname}/src"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "write_note",
+      "description": "Create or update markdown notes with semantic structure"
+    },
+    {
+      "name": "read_note",
+      "description": "Read notes by title, permalink, or memory:// URL"
+    },
+    {
+      "name": "edit_note",
+      "description": "Edit notes incrementally (append, prepend, find/replace)"
+    },
+    {
+      "name": "move_note",
+      "description": "Move or rename notes"
+    },
+    {
+      "name": "view_note",
+      "description": "Display notes as formatted artifacts"
+    },
+    {
+      "name": "read_content",
+      "description": "Read raw file content (text, images, binaries)"
+    },
+    {
+      "name": "delete_note",
+      "description": "Delete notes from knowledge base"
+    },
+    {
+      "name": "search_notes",
+      "description": "Full-text search across knowledge base"
+    },
+    {
+      "name": "build_context",
+      "description": "Navigate knowledge graph via memory:// URLs"
+    },
+    {
+      "name": "recent_activity",
+      "description": "Get recently updated information"
+    },
+    {
+      "name": "list_directory",
+      "description": "Browse directory contents with filtering"
+    },
+    {
+      "name": "canvas",
+      "description": "Generate Obsidian canvas files for knowledge visualization"
+    },
+    {
+      "name": "list_memory_projects",
+      "description": "List all projects with status"
+    },
+    {
+      "name": "switch_project",
+      "description": "Switch between project contexts"
+    },
+    {
+      "name": "get_current_project",
+      "description": "Show current project stats"
+    },
+    {
+      "name": "create_memory_project",
+      "description": "Create new projects"
+    },
+    {
+      "name": "delete_project",
+      "description": "Remove projects"
+    },
+    {
+      "name": "set_default_project",
+      "description": "Set default project"
+    },
+    {
+      "name": "sync_status",
+      "description": "Check synchronization status"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "continue_conversation",
+      "description": "Continue previous conversations with relevant historical context",
+      "arguments": [
+        "topic",
+        "timeframe"
+      ],
+      "text": "Continue our conversation about {{topic}} from {{timeframe}} ago. Use the continue_conversation tool to find relevant context and build on our previous discussion."
+    },
+    {
+      "name": "search_notes", 
+      "description": "Search knowledge base with detailed, formatted results",
+      "arguments": [
+        "query",
+        "after_date"
+      ],
+      "text": "Search my knowledge base for information about {{query}}. Use the search_notes tool to find relevant notes and provide a comprehensive summary of what I know about this topic."
+    },
+    {
+      "name": "recent_activity",
+      "description": "View recently changed items with formatted output", 
+      "arguments": [
+        "timeframe"
+      ],
+      "text": "Show me what I've been working on recently in the past {{timeframe}}. Use the recent_activity tool to display my recent notes and changes."
+    }
+  ],
+  "keywords": [
+    "knowledge",
+    "management", 
+    "local-first",
+    "ai",
+    "mcp",
+    "markdown",
+    "notes",
+    "zettelkasten"
+  ],
+  "license": "AGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/basicmachines-co/basic-memory"
+  },
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "python": ">=3.12.0 <4"
+    }
+  }
+}

@@ -1,0 +1,81 @@
+# Development files
+.venv/
+.pytest_cache/
+.coverage*
+htmlcov/
+.ruff_cache/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.env.*
+
+# Testing
+test*/
+tests/
+*.test.js
+*.test.py
+pytest.ini
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+.tox/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Claude
+.claude
+
+# Git files
+.git/
+.gitignore
+
+# Documentation build
+docs/_build/
+
+# Temporary files
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+
+# DXT package output
+*.dxt
+dxt-bundle/
+
+
+# Lock files
+uv.lock
+package-lock.json
+yarn.lock
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# CI/CD
+.github/
+justfile
+smithery.yaml
+
+# Project files
+.python.version
+CHANGELOG.md
+CITATION.cff
+CLA.md
+CLAUDE.md
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+README.md
+SECURITY.md
+docs/
+llms-install.md
