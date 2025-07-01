@@ -6,6 +6,7 @@ all tools with the MCP server.
 """
 
 # Import tools to register them with MCP
+from basic_memory.mcp.tools.basic_memory_diagnostics import basic_memory_diagnostics
 from basic_memory.mcp.tools.delete_note import delete_note
 from basic_memory.mcp.tools.read_content import read_content
 from basic_memory.mcp.tools.build_context import build_context
@@ -29,6 +30,7 @@ from basic_memory.mcp.tools.project_management import (
 )
 
 __all__ = [
+    "basic_memory_diagnostics",
     "build_context",
     "canvas",
     "create_memory_project",
