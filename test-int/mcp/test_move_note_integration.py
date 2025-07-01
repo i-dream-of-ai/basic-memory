@@ -594,7 +594,7 @@ async def test_move_note_potential_cross_project_guidance(mcp_server, app):
         error_message = move_result[0].text
         assert "Check Project Context" in error_message
         assert "workspace-docs" in error_message  # Should mention other available projects
-        assert "list_projects" in error_message
+        assert "list_memory_projects" in error_message
         assert "switch_project" in error_message
 
 

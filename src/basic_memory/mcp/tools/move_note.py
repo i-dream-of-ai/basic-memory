@@ -109,7 +109,7 @@ def _format_cross_project_error_response(
         ```
         
         ## Available projects:
-        Use `list_projects()` to see all available projects and `switch_project("project-name")` to change projects.
+        Use `list_memory_projects()` to see all available projects and `switch_project("project-name")` to change projects.
         """).strip()
 
 
@@ -153,7 +153,7 @@ def _format_potential_cross_project_guidance(
         
         ### To see all projects:
         ```
-        list_projects()
+        list_memory_projects()
         ```
         """).strip()
 

@@ -67,13 +67,13 @@ def _format_search_error_response(error_message: str, query: str, search_type: s
             The current project is not accessible or doesn't exist: {error_message}
 
             ## How to resolve:
-            1. **Check available projects**: `list_projects()`
+            1. **Check available projects**: `list_memory_projects()`
             2. **Switch to valid project**: `switch_project("valid-project-name")`
             3. **Verify project setup**: Ensure your project is properly configured
 
             ## Current session info:
             - Check current project: `get_current_project()`
-            - See available projects: `list_projects()`
+            - See available projects: `list_memory_projects()`
             """).strip()
 
     # No results found
@@ -162,7 +162,7 @@ You don't have permission to search in the current project: {error_message}
 3. **Check authentication**: You might need to re-authenticate
 
 ## Alternative actions:
-- List available projects: `list_projects()`
+- List available projects: `list_memory_projects()`
 - Switch to accessible project: `switch_project("project-name")`
 - Check current project: `get_current_project()`"""
 
@@ -189,7 +189,7 @@ Error searching for '{query}': {error_message}
 - **Browse files**: `list_directory("/")` - See all available content
 - **Recent activity**: `recent_activity(timeframe="7d")` - Check what's been updated
 - **Project info**: `get_current_project()` - Verify current project
-- **All projects**: `list_projects()` - Switch to different project if needed
+- **All projects**: `list_memory_projects()` - Switch to different project if needed
 
 ## Search syntax reference:
 - **Basic**: `keyword` or `multiple words`

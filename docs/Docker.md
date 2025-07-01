@@ -129,10 +129,10 @@ When using Docker volumes, you'll need to configure projects to point to your mo
 2. **Add a project for your mounted volume:**
    ```bash
    # If you mounted /path/to/your/vault to /app/data
-   docker exec basic-memory-server basic-memory project create my-vault /app/data
+   docker exec basic-memory-server basic-memory project add my-vault /app/data
    
    # Set it as default
-   docker exec basic-memory-server basic-memory project set-default my-vault
+   docker exec basic-memory-server basic-memory project default my-vault
    ```
 
 3. **Sync the new project:**
@@ -151,10 +151,10 @@ volumes:
 Then configure it:
 ```bash
 # Create project pointing to mounted vault
-docker exec basic-memory-server basic-memory project create obsidian /app/data
+docker exec basic-memory-server basic-memory project add obsidian /app/data
 
 # Set as default
-docker exec basic-memory-server basic-memory project set-default obsidian
+docker exec basic-memory-server basic-memory project default obsidian
 
 # Sync to index all files
 docker exec basic-memory-server basic-memory sync
