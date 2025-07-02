@@ -389,9 +389,8 @@ class SyncService:
                         logger.error(f"Entity not found after constraint violation, path={path}")
                         raise ValueError(f"Entity not found after constraint violation: {path}")
 
-                    updated = await self.entity_repository.update(
-                        entity.id, {"file_path": path, "checksum": checksum}
-                    )
+                    # Use safe update to handle potential conflicts
+                    updated = await self.safe_update_file_path(entity.id, path, {"checksum": checksum})
 
                     if updated is None:  # pragma: no cover
                         logger.error(f"Failed to update entity, entity_id={entity.id}, path={path}")
@@ -407,9 +406,8 @@ class SyncService:
                 logger.error(f"Entity not found for existing file, path={path}")
                 raise ValueError(f"Entity not found for existing file: {path}")
 
-            updated = await self.entity_repository.update(
-                entity.id, {"file_path": path, "checksum": checksum}
-            )
+            # Use safe update to handle potential conflicts  
+            updated = await self.safe_update_file_path(entity.id, path, {"checksum": checksum})
 
             if updated is None:  # pragma: no cover
                 logger.error(f"Failed to update entity, entity_id={entity.id}, path={path}")
@@ -477,7 +475,9 @@ class SyncService:
                     f"new_checksum={new_checksum}"
                 )
 
-            updated = await self.entity_repository.update(entity.id, updates)
+            # Use safe update to handle potential conflicts
+            updated = await self.safe_update_file_path(entity.id, new_path, 
+                                                     {k: v for k, v in updates.items() if k != "file_path"})
 
             if updated is None:  # pragma: no cover
                 logger.error(
@@ -544,6 +544,100 @@ class SyncService:
 
                 # update search index
                 await self.search_service.index_entity(resolved_entity)
+
+    async def safe_update_file_path(self, entity_id: int, new_file_path: str, additional_updates: Optional[Dict] = None) -> Optional[Entity]:
+        """Safely update entity file_path with conflict detection and resolution.
+        
+        This method handles race conditions where another entity might already claim
+        the target file_path. Instead of failing with UNIQUE constraint violation,
+        it detects conflicts and resolves them gracefully.
+        
+        Args:
+            entity_id: ID of entity to update
+            new_file_path: New file path to set
+            additional_updates: Optional additional fields to update
+            
+        Returns:
+            Updated entity or None if update failed
+        """
+        try:
+            # Check if target file_path is already taken by another entity
+            existing_entity = await self.entity_repository.get_by_file_path(new_file_path)
+            if existing_entity and existing_entity.id != entity_id:
+                # Conflict detected: another entity already owns this file_path
+                logger.warning(
+                    f"File path conflict detected: entity {entity_id} trying to move to {new_file_path}, "
+                    f"but entity {existing_entity.id} already owns it. Resolving conflict."
+                )
+                
+                # Get the entity we're trying to update
+                target_entities = await self.entity_repository.find_by_ids([entity_id])
+                if not target_entities:
+                    logger.error(f"Entity {entity_id} not found during conflict resolution")
+                    return None
+                target_entity = target_entities[0]
+                if not target_entity:
+                    logger.error(f"Entity {entity_id} not found during conflict resolution")
+                    return None
+                    
+                # Resolution strategy: merge into existing entity if it makes sense,
+                # or delete the target entity if the existing one is more complete
+                if existing_entity.checksum and not target_entity.checksum:
+                    # Existing entity is more complete (has checksum), delete target
+                    logger.info(
+                        f"Deleting incomplete entity {entity_id} in favor of complete entity {existing_entity.id}"
+                    )
+                    await self.entity_repository.delete(entity_id)
+                    return existing_entity
+                else:
+                    # Target entity is more complete or equal, update existing entity instead
+                    logger.info(
+                        f"Updating existing entity {existing_entity.id} with data from entity {entity_id}"
+                    )
+                    
+                    # Prepare updates from target entity
+                    updates = {
+                        "title": target_entity.title,
+                        "entity_type": target_entity.entity_type,
+                        "entity_metadata": target_entity.entity_metadata,
+                        "content_type": target_entity.content_type,
+                        "permalink": target_entity.permalink,
+                        "checksum": target_entity.checksum,
+                        "updated_at": target_entity.updated_at,
+                    }
+                    
+                    # Add any additional updates
+                    if additional_updates:
+                        updates.update(additional_updates)
+                        
+                    # Update existing entity
+                    updated = await self.entity_repository.update(existing_entity.id, updates)
+                    
+                    # Delete the target entity
+                    await self.entity_repository.delete(entity_id)
+                    
+                    return updated
+            else:
+                # No conflict, proceed with normal update
+                updates = {"file_path": new_file_path}
+                if additional_updates:
+                    updates.update(additional_updates)
+                    
+                return await self.entity_repository.update(entity_id, updates)
+                
+        except IntegrityError as e:
+            # Even with conflict detection, we might still hit race conditions
+            # Log the error and attempt recovery
+            logger.warning(f"Integrity error during file_path update for entity {entity_id}: {e}")
+            
+            # Try to find existing entity with the target file_path
+            existing_entity = await self.entity_repository.get_by_file_path(new_file_path)
+            if existing_entity:
+                logger.info(f"Found existing entity {existing_entity.id} with file_path {new_file_path}")
+                return existing_entity
+            else:
+                # Re-raise if we can't resolve the conflict
+                raise
 
     async def scan_directory(self, directory: Path) -> ScanResult:
         """
