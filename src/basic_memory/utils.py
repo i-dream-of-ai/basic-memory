@@ -6,6 +6,7 @@ import logging
 import re
 import sys
 import unicodedata
+import warnings
 from pathlib import Path
 from typing import Optional, Protocol, Union, runtime_checkable, List, Any
 
@@ -178,6 +179,23 @@ def setup_logging(
     # Set log levels for noisy loggers
     for logger_name, level in noisy_loggers.items():
         logging.getLogger(logger_name).setLevel(level)
+
+    # Filter deprecation warnings for user environment to provide clean UX
+    # Keep them visible in dev/test environments for developers
+    if env == "user":
+        # Suppress SQLAlchemy deprecation warnings that appear in user-facing commands
+        warnings.filterwarnings(
+            "ignore",
+            category=DeprecationWarning,
+            module="sqlalchemy",
+            message=".*datetime\\.datetime\\.utcnow.*"
+        )
+        # Also suppress any other datetime.utcnow deprecation warnings
+        warnings.filterwarnings(
+            "ignore", 
+            category=DeprecationWarning,
+            message=".*datetime\\.datetime\\.utcnow.*"
+        )
 
 
 def parse_tags(tags: Union[List[str], str, None]) -> List[str]:
