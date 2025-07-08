@@ -477,7 +477,31 @@ class SyncService:
                     f"new_checksum={new_checksum}"
                 )
 
-            updated = await self.entity_repository.update(entity.id, updates)
+            try:
+                updated = await self.entity_repository.update(entity.id, updates)
+            except IntegrityError as e:
+                # Handle file path conflicts (e.g., file swaps)
+                if "UNIQUE constraint failed: entity.file_path" in str(e):
+                    logger.info(
+                        f"File path conflict detected during move: "
+                        f"entity_id={entity.id}, old_path={old_path}, new_path={new_path}. "
+                        f"Using temporary path to resolve conflict."
+                    )
+                    
+                    # Use temporary path to resolve conflicts
+                    import uuid
+                    temp_path = f"{new_path}.tmp_{uuid.uuid4().hex[:8]}"
+                    temp_updates = updates.copy()
+                    temp_updates["file_path"] = temp_path
+                    
+                    # Update to temporary path first
+                    await self.entity_repository.update(entity.id, temp_updates)
+                    
+                    # Then update to final path
+                    updated = await self.entity_repository.update(entity.id, updates)
+                else:
+                    # Re-raise if it's a different integrity error
+                    raise
 
             if updated is None:  # pragma: no cover
                 logger.error(
