@@ -1,6 +1,7 @@
 """Test configuration management."""
 
-from basic_memory.config import BasicMemoryConfig
+import json
+from basic_memory.config import BasicMemoryConfig, ConfigManager
 
 
 class TestBasicMemoryConfig:
@@ -76,3 +77,71 @@ class TestBasicMemoryConfig:
         # The default_factory should override with BASIC_MEMORY_HOME value
         # Note: This tests the current behavior where default_factory takes precedence
         assert config.projects["main"] == original_path
+
+
+class TestConfigManager:
+    """Test ConfigManager behavior with BASIC_MEMORY_HOME environment variable."""
+
+    def test_load_config_respects_basic_memory_home_with_existing_file(self, config_home, monkeypatch):
+        """Test that ConfigManager.load_config respects BASIC_MEMORY_HOME even when config file exists."""
+        # Set up a custom path via environment variable
+        custom_path = str(config_home / "custom" / "env" / "path")
+        monkeypatch.setenv("BASIC_MEMORY_HOME", custom_path)
+
+        # Create a config manager with a temporary config directory
+        config_dir = config_home / ".basic-memory"
+        config_dir.mkdir(parents=True, exist_ok=True)
+        config_file = config_dir / "config.json"
+        
+        # Create a config file with a different main project path
+        file_config = {
+            "projects": {
+                "main": str(config_home / "file" / "path")
+            },
+            "default_project": "main"
+        }
+        config_file.write_text(json.dumps(file_config))
+
+        # Mock the ConfigManager to use our temporary config directory
+        monkeypatch.setattr("basic_memory.config.ConfigManager.config_dir", config_dir)
+        monkeypatch.setattr("basic_memory.config.ConfigManager.config_file", config_file)
+
+        # Create ConfigManager and load config
+        config_manager = ConfigManager()
+        config_manager.config_dir = config_dir
+        config_manager.config_file = config_file
+        
+        loaded_config = config_manager.load_config()
+
+        # The environment variable should override the file-based configuration
+        assert loaded_config.projects["main"] == custom_path
+
+    def test_load_config_without_basic_memory_home_uses_file_config(self, config_home, monkeypatch):
+        """Test that ConfigManager.load_config uses file config when BASIC_MEMORY_HOME is not set."""
+        # Ensure BASIC_MEMORY_HOME is not set
+        monkeypatch.delenv("BASIC_MEMORY_HOME", raising=False)
+
+        # Create a config manager with a temporary config directory
+        config_dir = config_home / ".basic-memory"
+        config_dir.mkdir(parents=True, exist_ok=True)
+        config_file = config_dir / "config.json"
+        
+        # Create a config file with a specific main project path
+        file_path = str(config_home / "file" / "path")
+        file_config = {
+            "projects": {
+                "main": file_path
+            },
+            "default_project": "main"
+        }
+        config_file.write_text(json.dumps(file_config))
+
+        # Create ConfigManager and load config
+        config_manager = ConfigManager()
+        config_manager.config_dir = config_dir
+        config_manager.config_file = config_file
+        
+        loaded_config = config_manager.load_config()
+
+        # Should use the file-based configuration
+        assert loaded_config.projects["main"] == file_path

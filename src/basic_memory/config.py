@@ -180,7 +180,14 @@ class ConfigManager:
         if self.config_file.exists():
             try:
                 data = json.loads(self.config_file.read_text(encoding="utf-8"))
-                return BasicMemoryConfig(**data)
+                config = BasicMemoryConfig(**data)
+                
+                # Allow BASIC_MEMORY_HOME environment variable to override the main project path
+                env_home = os.getenv("BASIC_MEMORY_HOME")
+                if env_home:
+                    config.projects["main"] = str(Path(env_home))
+                
+                return config
             except Exception as e:  # pragma: no cover
                 logger.error(f"Failed to load config: {e}")
                 config = BasicMemoryConfig()
