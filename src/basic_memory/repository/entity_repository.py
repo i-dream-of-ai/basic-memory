@@ -405,7 +405,7 @@ class EntityRepository(Repository[Entity]):
             }
 
             # For moves, we need to handle the file_path conflict properly
-            conflict_columns = ["file_path"] if "file_path" in updates else ["file_path"]
+            conflict_columns = ["file_path"]
 
             # Use the optimistic upsert method
             return await self.upsert_entity_optimistic(entity_data, conflict_columns)
