@@ -1,12 +1,19 @@
 """Schemas for memory context."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional, Annotated, Sequence, Literal, Union
 
 from annotated_types import MinLen, MaxLen
-from pydantic import BaseModel, Field, BeforeValidator, TypeAdapter
+from pydantic import BaseModel, Field, BeforeValidator, TypeAdapter, field_serializer
 
 from basic_memory.schemas.search import SearchItemType
+
+
+def ensure_timezone_aware(dt: datetime) -> datetime:
+    """Ensure datetime is timezone-aware by converting to UTC if naive."""
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
 
 
 def validate_memory_url_path(path: str) -> bool:
@@ -125,6 +132,11 @@ class EntitySummary(BaseModel):
     file_path: str
     created_at: datetime
 
+    @field_serializer('created_at')
+    def serialize_created_at(self, dt: datetime) -> str:
+        """Serialize datetime as RFC 3339 compliant string with timezone."""
+        return ensure_timezone_aware(dt).isoformat()
+
 
 class RelationSummary(BaseModel):
     """Simplified relation representation."""
@@ -138,6 +150,11 @@ class RelationSummary(BaseModel):
     to_entity: Optional[str] = None
     created_at: datetime
 
+    @field_serializer('created_at')
+    def serialize_created_at(self, dt: datetime) -> str:
+        """Serialize datetime as RFC 3339 compliant string with timezone."""
+        return ensure_timezone_aware(dt).isoformat()
+
 
 class ObservationSummary(BaseModel):
     """Simplified observation representation."""
@@ -149,6 +166,11 @@ class ObservationSummary(BaseModel):
     category: str
     content: str
     created_at: datetime
+
+    @field_serializer('created_at')
+    def serialize_created_at(self, dt: datetime) -> str:
+        """Serialize datetime as RFC 3339 compliant string with timezone."""
+        return ensure_timezone_aware(dt).isoformat()
 
 
 class MemoryMetadata(BaseModel):
@@ -164,6 +186,11 @@ class MemoryMetadata(BaseModel):
     total_results: Optional[int] = None  # For backward compatibility
     total_relations: Optional[int] = None
     total_observations: Optional[int] = None
+
+    @field_serializer('generated_at')
+    def serialize_generated_at(self, dt: datetime) -> str:
+        """Serialize datetime as RFC 3339 compliant string with timezone."""
+        return ensure_timezone_aware(dt).isoformat()
 
 
 class ContextResult(BaseModel):
