@@ -162,7 +162,8 @@ class ProjectService:
         self.config_manager.set_default_project(name)
 
         # Then update database
-        project = await self.repository.get_by_name(name)
+        # Use normalized permalink for database lookup
+        project = await self.repository.get_by_name(generate_permalink(name))
         if project:
             await self.repository.set_as_default(project.id)
         else:
@@ -213,7 +214,8 @@ class ProjectService:
             # No default project - set the config default as default
             # This is defensive code for edge cases where no default exists
             config_default = self.config_manager.default_project  # pragma: no cover
-            config_project = await self.repository.get_by_name(config_default)  # pragma: no cover
+            # Use normalized permalink for database lookup
+            config_project = await self.repository.get_by_name(generate_permalink(config_default))  # pragma: no cover
             if config_project:  # pragma: no cover
                 await self.repository.set_as_default(config_project.id)  # pragma: no cover
                 logger.info(
@@ -251,10 +253,20 @@ class ProjectService:
 
             updated_config[normalized_name] = path
 
+        # Also check if default_project needs normalization
+        current_default = self.config_manager.default_project
+        normalized_default = generate_permalink(current_default)
+        if normalized_default != current_default and normalized_default in updated_config:
+            logger.info(f"Normalizing default project in config: '{current_default}' -> '{normalized_default}'")
+            config_updated = True
+
         # Update the configuration if any changes were made
         if config_updated:
             config = self.config_manager.load_config()
             config.projects = updated_config
+            # Update default_project if it was normalized
+            if normalized_default != current_default and normalized_default in updated_config:
+                config.default_project = normalized_default
             self.config_manager.save_config(config)
             logger.info("Config updated with normalized project names")
 
@@ -293,7 +305,8 @@ class ProjectService:
             self.config_manager.set_default_project(db_default.name)
         elif not db_default and config_default:
             # Update DB to match config default (if the project exists)
-            project = await self.repository.get_by_name(config_default)
+            # Use normalized permalink for database lookup
+            project = await self.repository.get_by_name(generate_permalink(config_default))
             if project:
                 logger.info(f"Updating default project in database to '{config_default}'")
                 await self.repository.set_as_default(project.id)
