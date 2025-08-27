@@ -1,11 +1,19 @@
 FROM python:3.12-slim-bookworm
 
+# Build arguments for user ID and group ID (defaults to 1000)
+ARG UID=1000
+ARG GID=1000
+
 # Copy uv from official image
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
+
+# Create a group and user with the provided UID/GID
+RUN groupadd --gid ${GID} appgroup && \
+    useradd --uid ${UID} --gid ${GID} --create-home --shell /bin/bash appuser
 
 # Copy the project into the image
 ADD . /app
@@ -14,12 +22,16 @@ ADD . /app
 WORKDIR /app
 RUN uv sync --locked
 
-# Create data directory
-RUN mkdir -p /app/data
+# Create necessary directories and set ownership
+RUN mkdir -p /app/data /app/.basic-memory && \
+    chown -R appuser:appgroup /app
 
 # Set default data directory and add venv to PATH
 ENV BASIC_MEMORY_HOME=/app/data \
     PATH="/app/.venv/bin:$PATH"
+
+# Switch to the non-root user
+USER appuser
 
 # Expose port
 EXPOSE 8000
